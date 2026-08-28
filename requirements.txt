@@ -1,0 +1,13 @@
+# VI-AI runtime dependencies
+
+# Only needed for the "claude" provider. The "ollama" and "mock" providers use
+# the standard library alone.
+anthropic>=1.0.0
+
+# Only needed on Python < 3.11 (tomllib is stdlib from 3.11 onward).
+tomli>=2.0 ; python_version < "3.11"
+
+# Optional, and strongly recommended: piper is a neural voice that is far
+# easier to understand than espeak-ng, and quicker per phrase. Install it with
+#     pip install -r requirements-piper.txt
+# then download a voice, and set speech.piper_model in your config.

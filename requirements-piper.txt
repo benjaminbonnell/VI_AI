@@ -1,0 +1,9 @@
+# The piper neural voice. Optional; espeak-ng is used if this is absent.
+#
+# After installing, download a voice:
+#     python -m piper.download_voices en_US-lessac-medium --download-dir voices
+# then set in your config:
+#     [speech]
+#     engine = "piper"
+#     piper_model = "voices/en_US-lessac-medium.onnx"
+piper-tts>=1.7

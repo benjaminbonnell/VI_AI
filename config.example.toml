@@ -1,0 +1,243 @@
+# VI-AI configuration
+#
+# Copy this file to one of the places VI-AI looks, in order:
+#
+#   $VI_AI_CONFIG
+#   ./config.toml
+#   ~/.config/vi_ai/config.toml
+#   /etc/vi_ai/config.toml
+#
+# Every setting below is optional. Anything you delete falls back to the
+# default shown here, so a short config file is perfectly valid.
+#
+# Check your changes without starting the app:   python -m vi_ai --check
+
+
+[api]
+
+# Which AI answers your questions:
+#
+#   "claude"  the Anthropic API. The best answers, but it needs a paid API key
+#             from https://console.anthropic.com. Note that a Claude Pro or
+#             Max subscription does NOT include API access; they are billed
+#             separately.
+#
+#   "ollama"  a model running on this machine through Ollama. Free, no
+#             account, and works with no internet once the model is
+#             downloaded. Settings are in the [ollama] section below.
+#             Install it from https://ollama.com, then: ollama pull llama3.2
+#
+#   "mock"    canned replies, with no network and no setup at all. Use this to
+#             check that the keyboard, the speech and the screen work before
+#             setting up anything else.
+#
+# This example starts on "ollama" because it is the option that works without
+# paying for anything. VI-AI's own built-in default is "claude".
+provider = "ollama"
+
+# The rest of this section applies to every provider, except for key, model
+# and effort, which are Claude's. Ollama has its own model setting below.
+
+# Your Claude API key. Leave this commented out and set the ANTHROPIC_API_KEY
+# environment variable instead where you can: a key in a file is easy to leak
+# when sharing the machine or a backup. The environment variable always wins.
+# key = "sk-ant-..."
+
+# Which Claude model answers, when provider = "claude". Opus 5 is the most
+# capable; claude-sonnet-5 is cheaper and a little faster for simple questions.
+model = "claude-opus-5"
+
+# Longest answer the AI may write. Answers here are listened to rather than
+# read, and 4096 tokens is already several minutes of speech.
+max_tokens = 4096
+
+# Claude only. How hard it thinks before answering: low, medium, high, xhigh or max.
+# Higher settings give better answers but a longer silence before speech
+# starts. Use "none" to leave the setting out entirely, which is needed only
+# for models older than Claude Opus 4.5.
+effort = "medium"
+
+# Seconds to wait for an answer before giving up. A local Ollama model on a
+# Raspberry Pi can be slow, so raise this if you see timeouts.
+timeout_seconds = 120
+
+# How many earlier messages are sent back as context, so Claude remembers what
+# you were talking about. Each question and each answer counts as one. Set to 0
+# for no limit. Lower this if a local model is running out of memory.
+max_history_messages = 40
+
+# What the AI is told about how to answer. The default tells it to write plain
+# spoken prose with no markdown, to lead with the answer, and to keep things
+# short, which is what makes answers pleasant to listen to. Only set this if
+# you want to change that; see DEFAULT_SYSTEM_PROMPT in vi_ai/config.py.
+# system_prompt = """
+# You are a helpful assistant. Answer in short spoken sentences.
+# """
+
+
+[ollama]
+
+# Only used when provider = "ollama" above.
+
+# Where the Ollama server is. The default is Ollama's own default, on this
+# machine. Point it at another machine on your network if you would rather run
+# the model somewhere with more memory, for example "http://192.168.1.10:11434".
+host = "http://127.0.0.1:11434"
+
+# Which model to use. Download it first with `ollama pull <name>`.
+#
+#   llama3.2        about 2 GB. A good default on a desktop or a Pi 5 with 8 GB.
+#   llama3.2:1b     about 1.3 GB. Much faster, and fine on a Pi 4.
+#   qwen2.5:0.5b    about 400 MB. Fastest, for a Pi with little memory.
+#
+# Smaller models answer sooner, which matters more here than usual, because
+# you are waiting in silence for speech to start.
+model = "llama3.2"
+
+
+[speech]
+
+# Which program speaks.
+#
+#   "piper"     a neural voice. Much easier to understand than espeak-ng, and
+#               quicker per phrase because the voice is loaded once instead of
+#               for every phrase. Needs piper_model below. Recommended.
+#   "auto"      piper if piper_model is set and the file exists, otherwise
+#               espeak-ng, then espeak, then spd-say.
+#   "espeak-ng" robotic but tiny, fast, and installed everywhere.
+#   "spd-say"   speech-dispatcher, using your system voice settings.
+#   "command"   any other program; see speech.command below.
+#   "none"      silence.
+engine = "auto"
+
+# The piper voice file. Setting this makes "auto" choose piper.
+#
+#   pip install -r requirements-piper.txt
+#   python -m piper.download_voices en_US-lessac-medium --download-dir voices
+#
+# Voices are listed at https://rhasspy.github.io/piper-samples/ — listen first
+# and pick one you find clear. On a Raspberry Pi prefer a "low" voice such as
+# en_US-lessac-low, which uses less memory and starts speaking sooner.
+# piper_model = "voices/en_US-lessac-medium.onnx"
+
+# Which voice, if the model has more than one. Most have only voice 0.
+piper_speaker = 0
+
+# The command that plays sound, used by piper. Empty means auto-detect, which
+# tries aplay, pw-cat, pw-play, paplay and ffplay in that order. They are tried
+# cheapest first, because this cost is paid on every phrase including every key
+# name. Override it only if the wrong device is being used.
+# player = ["aplay", "-q", "-D", "plughw:1,0", "-"]
+
+# Voice or language. For espeak-ng try "en", "en-gb", "en-us", "fr", "de".
+# Run `espeak-ng --voices` to list them all.
+voice = "en"
+
+# Speaking speed in words per minute. 170 is a gentle default. Experienced
+# screen reader users often prefer 250 to 400. A higher rate also means key
+# names finish sooner, so the speech keeps up with fast typing better.
+rate = 170
+
+# Loudness, 0 to 200. This is separate from the system volume.
+volume = 100
+
+# Voice pitch, 0 to 99.
+pitch = 50
+
+# Speak each key as it is pressed, so you can check what you typed.
+speak_key_echo = true
+
+# A keypress cuts off whatever is being spoken. Keep this on: with it off, the
+# name of the key you just pressed waits behind the whole answer.
+interrupt_on_keypress = true
+
+# On backspace, name the character that was removed ("deleted b") rather than
+# just saying "backspace".
+announce_deleted_char = true
+
+# Speak short announcements such as "Sending" and "Question cleared". Turning
+# this off makes the app quieter; errors and answers are still always spoken.
+speak_status = true
+
+# Longest run of characters handed to the speech program at once. Smaller
+# values react faster when you interrupt; larger values sound more natural.
+max_chunk_chars = 300
+
+# How many key names may be waiting to be spoken before the oldest are dropped.
+#
+# Saying a key name takes longer than pressing the next key, so a fast typist
+# always outruns the voice. This setting decides what happens then:
+#
+#   1   stay as close to your fingers as possible; more keys go unspoken
+#   2   within about a second of your typing (the default)
+#   10  every single key is spoken, but it falls further and further behind
+max_pending_echoes = 2
+
+# Only used when engine = "command", for a speech program VI-AI does not know
+# about. "{text}", "{voice}", "{rate}", "{volume}" and "{pitch}" are filled in.
+# If no argument mentions "{text}", the text is written to the program's input
+# instead, which is what piped engines such as piper expect.
+#
+# Note that piper has its own engine setting above; you do not need "command"
+# for it. Use "command" only for some other program, for example:
+# engine = "command"
+# command = ["mimic3", "--voice", "{voice}", "{text}"]
+
+
+[keys]
+
+# Key names are X11 keysyms. To find the name of a key on your keyboard, run:
+#
+#   python -m vi_ai --list-keys
+#
+# and press it. Each action accepts one name or a list of names.
+
+# Send the question to Claude.
+send = ["Return", "KP_Enter", "F3"]
+
+# Read the question you have typed so far back to you.
+speak_prompt = ["F1"]
+
+# Delete the whole question and start again.
+clear_prompt = ["F2"]
+
+# Read the last answer again.
+repeat_last = ["F4"]
+
+# Stop talking immediately.
+stop_speech = ["Escape"]
+
+# Close VI-AI.
+quit = ["F12"]
+
+
+[ui]
+
+# The screen is a courtesy for a sighted helper or for someone with partial
+# vision. Everything shown here is also spoken.
+
+# Fill the whole screen with no title bar or panels to get lost in.
+fullscreen = true
+
+# Text size and typeface. Large is good.
+font_family = "DejaVu Sans"
+font_size = 28
+
+# High contrast colours. White on black by default; some people read dark text
+# on a pale yellow background more easily, for example:
+#   background = "#FFFFDD"
+#   foreground = "#000000"
+background = "#000000"
+foreground = "#FFFFFF"
+
+# Colours for your questions, Claude's answers, and app messages.
+user_color = "#FFD75F"
+assistant_color = "#87FF87"
+status_color = "#9E9E9E"
+
+# Show the question you are typing along the bottom of the screen.
+show_prompt_line = true
+
+# Window size, used when fullscreen is off.
+window_width = 1024
+window_height = 768
